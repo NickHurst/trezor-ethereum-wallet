@@ -6,8 +6,8 @@
 
 <script>
   export default {
-    name: 'cryptfolio'
-  }
+    name: 'cryptfolio',
+  };
 </script>
 
 <style>
