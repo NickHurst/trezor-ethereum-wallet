@@ -1,4 +1,4 @@
-import { __, concat, equals, ifElse, insert, last, map, once, pipe, split, unless } from 'ramda';
+import { __, append, call, equals, ifElse, last, map, pipe, prop, split, unless } from 'ramda';
 
 import { bitOr, bitZFillRight0, chomp, isArray, lchomp, parseInteger } from './functions';
 
@@ -39,27 +39,28 @@ const parseBip44PathLevel: (pathLevel: string) => number =
 export const parseBIP44Path: (pathString: string) => number[] =
   pipe(lchomp, split('/'), map(parseBip44PathLevel));
 
-interface ETHWalletOptions { index?: number | number[]; path?: string; }
+interface EtherAddressOptions { index?: number | number[]; path?: string; }
 
 /**
  * Gets Ethereum wallet address(es) on the passed device
  * at the specifed path index(es).
  *
- * The default path used for Ether wallets is m/40'/60'/0'/0/address_index.
+ * The default path used for Ether wallets is m/40'/60'/0'/0/addressIndex.
  *
  * @see github.com/ethereum/EIPs/issues/84
  * @see github.com/satoshilabs/slips/blob/master/slip-0044.md
  *
  * @param device {Object} Trezor Device object
+ * @param options {Object}
+ *   @option path {String} path to wallet - default is BIP44 path ("m/40'/60'/0'/0/addressIndex")
+ *   @option index {Number} wallet address index - default is 0
  *
  * @return {Promise}
  */
-export const getEthereumAddress: (device: any, options: ETHWalletOptions) => Promise<any[]> =
-  (device, { index = 0, path = 'm/40\'/60\'/0\'/0' }) => {
-    const indexes = unless(isArray, insert(0, __, []), index);
-    const toPath: (index: number) => number[] = insert(-1, __, once(parseBIP44Path(path)));
+export const getEthereumAddress: (device: any, options: EtherAddressOptions) => Promise<any[]> =
+  (device, { path = 'm/40\'/60\'/0\'/0', index = 0 }) => {
+    const paths = map(append(__, parseBIP44Path(path)), unless(isArray, append(index, []), index));
+    const getAddresses = pipe(prop('getEthereumAddress'), call, map(__, paths));
 
-    return device.run(async session =>
-      await Promise.all(map(pipe(toPath, session.getEthereumAddress), indexes)),
-    );
+    return device.run(async session => await Promise.all(getAddresses(session)));
   };
