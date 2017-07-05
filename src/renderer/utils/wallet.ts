@@ -57,7 +57,7 @@ interface ETHWalletOptions { index?: number | number[]; path?: string; }
 export const getEthereumAddress: (device: any, options: ETHWalletOptions) => Promise<any[]> =
   (device, { index = 0, path = 'm/40\'/60\'/0\'/0' }) => {
     const indexes = unless(isArray, insert(0, __, []), index);
-    const toPath: (i: number) => number[] = insert(-1, __, once(parseBIP44Path(path)));
+    const toPath: (index: number) => number[] = insert(-1, __, once(parseBIP44Path(path)));
 
     return device.run(async session =>
       await Promise.all(map(pipe(toPath, session.getEthereumAddress), indexes)),
