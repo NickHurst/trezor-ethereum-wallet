@@ -9,6 +9,7 @@
 		"only-arrow-functions": [false],
 		"prefer-const": true,
 		"quotemark": [true, "single", "avoid-escape"],
-		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
+		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+		"no-bitwise": false
 	}
 }
