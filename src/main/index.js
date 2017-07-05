@@ -8,6 +8,19 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\') // eslint-disable-line
 }
 
+function setHeaders(mainWindow) {
+  const session = mainWindow.webContents.session;
+  session.webRequest.onBeforeSendHeaders((details, callback) => {
+    const url = details.url;
+    if (url.startsWith('https://localback.net:21324')) {
+      if (details.requestHeaders.Origin === 'null') {
+        delete details.requestHeaders.Origin;
+      }
+    }
+    callback({ cancel: false, requestHeaders: details.requestHeaders });
+  });
+}
+
 let mainWindow;
 const winURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:9080'
@@ -18,10 +31,12 @@ function createWindow() {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    height: 563,
+    height: 800,
     useContentSize: true,
     width: 1000,
   });
+
+  setHeaders(mainWindow);
 
   mainWindow.loadURL(winURL);
 

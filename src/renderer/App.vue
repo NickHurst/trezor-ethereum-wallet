@@ -1,15 +1,35 @@
 <template>
   <div id="app">
     <router-view></router-view>
+
+    <pin-entry :active="pinEntryActive"></pin-entry>
   </div>
 </template>
 
 <script>
-  export default {
-    name: 'cryptfolio',
-  };
+import { mapActions } from 'vuex';
+
+import PinEntry from './elements/PinEntry';
+
+export default {
+  name: 'cryptfolio',
+  data() {
+    return {
+      pinEntryActive: true,
+    };
+  },
+  methods: {
+    ...mapActions(['initializeWallet']),
+  },
+  created() {
+    this.initializeWallet();
+  },
+  components: {
+    PinEntry,
+  },
+};
 </script>
 
 <style>
-  /* CSS */
+@import '~spectre.css/dist/spectre.min.css';
 </style>
