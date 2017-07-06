@@ -76,5 +76,5 @@ export const getEtherAddresses: (device: any, options: EtherAddressOptions) => P
  * @return {Promise}
  */
 export const getEtherAddress: (device: any, options: EtherAddressOptions) => Promise<any> =
-  async (device, { path, index: i = 0 }) =>
-    last(await getEtherAddresses(device, { path, indexes: [i] }));
+  async (device, { path, index = 0 }) =>
+    last(await getEtherAddresses(device, { path, indexes: [index] }));
