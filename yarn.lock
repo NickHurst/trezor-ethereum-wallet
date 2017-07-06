@@ -6,6 +6,10 @@
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/7zip/-/7zip-0.0.6.tgz#9cafb171af82329490353b4816f03347aa150a30"
 
+"@types/nedb@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@types/nedb/-/nedb-1.8.3.tgz#e6f21da4927147492084bbbc9dfbbc815310e08b"
+
 "@types/node@^7.0.18":
   version "7.0.33"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-7.0.33.tgz#ae3c53ad01d7e9d62c7f1a85c5f7500d59b9d25b"
