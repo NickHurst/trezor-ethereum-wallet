@@ -2,7 +2,7 @@ import path from 'path';
 
 import Datastore from 'nedb';
 
-import { curryN, isNil } from 'ramda';
+import { curryN } from 'ramda';
 
 interface FindPayload { query: object; docs?: object[]; err?: object; }
 
@@ -17,7 +17,7 @@ interface FindPayload { query: object; docs?: object[]; err?: object; }
  */
 const find: (db: Datastore, query: object) => Promise<FindPayload> = (db, query) =>
   new Promise((resolve, reject) =>
-    db.find(query, (err, docs) => isNil(err) ? resolve({ docs, query }) : reject({ err, query })),
+    db.find(query, (err, docs) => err ? resolve({ docs, query }) : reject({ err, query })),
   );
 
 interface FindByPayload { query: object; doc?: object; err?: Error; }
@@ -33,7 +33,7 @@ interface FindByPayload { query: object; doc?: object; err?: Error; }
  */
 const findBy: (db: Datastore, query: object) => Promise<FindByPayload> = (db, query) =>
   new Promise((resolve, reject) =>
-    db.findOne(query, (err, doc) => isNil(err) ? resolve({ doc, query }) : reject({ err, query })),
+    db.findOne(query, (err, doc) => err ? resolve({ doc, query }) : reject({ err, query })),
   );
 
 interface CountPayload { query: object; count?: number; err?: Error; }
@@ -49,7 +49,7 @@ interface CountPayload { query: object; count?: number; err?: Error; }
  */
 const count: (db: Datastore, query: object) => Promise<CountPayload> = (db, query = {}) =>
   new Promise((resolve, reject) =>
-    db.count(query, (err, count) => isNil(err) ? resolve({ count, query }) : reject({ err, query })),
+    db.count(query, (err, count) => err ? resolve({ count, query }) : reject({ err, query })),
   );
 
 interface InsertPayload { doc?: object; err?: Error; }
@@ -66,7 +66,7 @@ interface InsertPayload { doc?: object; err?: Error; }
  */
 const insert: (db: Datastore, doc: object) => Promise<InsertPayload> = (db, doc) =>
   new Promise((resolve, reject) =>
-    db.insert(doc, (err, newDoc) => isNil(err) ? resolve({ doc: newDoc }) : reject({ err, doc })),
+    db.insert(doc, (err, newDoc) => err ? resolve({ doc: newDoc }) : reject({ err, doc })),
   );
 
 interface UpdatePayload {
@@ -96,7 +96,7 @@ interface UpdatePayload {
 const update: (db: Datastore, query: object, update: object, options: Nedb.UpdateOptions) => Promise<UpdatePayload> =
   (db, query, update, options = {}) => new Promise((resolve, reject) =>
     db.update(query, update, options, (err, updatedCount, affectedDocs, upsert) =>
-      isNil(err) ? resolve({ updatedCount, affectedDocs, upsert }) : reject({ err, query, update, options }),
+      err ? resolve({ updatedCount, affectedDocs, upsert }) : reject({ err, query, update, options }),
     ),
   );
 
@@ -123,7 +123,7 @@ interface DestroyPayload {
 const destroy: (db: Datastore, query: object, options: Nedb.RemoveOptions) => Promise<DestroyPayload> =
   (db, query, options = {}) => new Promise((resolve, reject) =>
     db.remove(query, options, (err, destroyedCount) =>
-      isNil(err) ? resolve({ destroyedCount }) : reject({ err, query, update, options }),
+      err ? resolve({ destroyedCount }) : reject({ err, query, update, options }),
     ),
   );
 

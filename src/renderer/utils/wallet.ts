@@ -1,4 +1,4 @@
-import { __, append, call, equals, ifElse, last, map, once, pipe, prop, split, unless } from 'ramda';
+import { call, equals, ifElse, last, map, once, pipe, prop, split, unless } from 'ramda';
 
 import { bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger } from './functions';
 
@@ -58,11 +58,11 @@ interface EtherAddressOptions { index?: number; indexes?: number[]; path?: strin
  * @return {Promise}
  */
 export const getEtherAddresses: (device: any, options: EtherAddressOptions) => Promise<any[]> =
-  (device, { path = 'm/40\'/60\'/0\'/0', indexes = [0] }) => {
-    const paths = map(append(__, once(parseBIP44Path(path))), indexes);
-    const getAddresses = pipe(prop('getEthereumAddress'), call, map(__, paths));
+  async (device, { path = 'm/40\'/60\'/0\'/0', indexes = [0] }) => {
+    const paths = indexes.map(call(once(parseBIP44Path(path)).concat));
+    const getAddresses = pipe(prop('getEthereumAddress'), call, call(paths.map));
 
-    return device.run(async session => await Promise.all(getAddresses(session)));
+    return await device.run(pipe(getAddresses, Promise.all));
   };
 
 /**
