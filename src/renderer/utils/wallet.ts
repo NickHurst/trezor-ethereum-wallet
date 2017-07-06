@@ -1,6 +1,6 @@
 import { __, append, call, equals, ifElse, last, map, once, pipe, prop, split, unless } from 'ramda';
 
-import { bitOr, bitZFillRight0, chomp, isArray, lchomp, parseInteger } from './functions';
+import { bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger } from './functions';
 
 /**
  * Applies 0x80000000 bitmask to passed BIP44 path level
@@ -14,7 +14,7 @@ import { bitOr, bitZFillRight0, chomp, isArray, lchomp, parseInteger } from './f
  * @return {Number}
  */
 const applyDerivationMask: (pathLevel: string) => number =
-  pipe(chomp, parseInteger, bitOr(0x80000000), bitZFillRight0);
+  pipe(chomp, parseInteger, bitOr(0x80000000), bitZeroFillRight(0));
 
 /**
  * Parses BIP44 path level string into BIP32 path integer. If
@@ -26,7 +26,7 @@ const applyDerivationMask: (pathLevel: string) => number =
  *
  * @return {Array<Number>}
  */
-const parseBip44PathLevel: (pathLevel: string) => number =
+const parseBIP44PathLevel: (pathLevel: string) => number =
   ifElse(pipe(last, equals("'")), applyDerivationMask, parseInteger);
 
 /**
@@ -37,7 +37,7 @@ const parseBip44PathLevel: (pathLevel: string) => number =
  * @return {Array<Number>}
  */
 export const parseBIP44Path: (pathString: string) => number[] =
-  pipe(lchomp, split('/'), map(parseBip44PathLevel));
+  pipe(lchomp, split('/'), map(parseBIP44PathLevel));
 
 interface EtherAddressOptions { index?: number; indexes?: number[]; path?: string; }
 
@@ -57,7 +57,7 @@ interface EtherAddressOptions { index?: number; indexes?: number[]; path?: strin
  *
  * @return {Promise}
  */
-export const getEthereumAddresses: (device: any, options: EtherAddressOptions) => Promise<any[]> =
+export const getEtherAddresses: (device: any, options: EtherAddressOptions) => Promise<any[]> =
   (device, { path = 'm/40\'/60\'/0\'/0', indexes = [0] }) => {
     const paths = map(append(__, once(parseBIP44Path(path))), indexes);
     const getAddresses = pipe(prop('getEthereumAddress'), call, map(__, paths));
@@ -75,6 +75,6 @@ export const getEthereumAddresses: (device: any, options: EtherAddressOptions) =
  *
  * @return {Promise}
  */
-export const getEthereumAddress: (device: any, options: EtherAddressOptions) => Promise<any> =
-  async (device, { path = 'm/40\'/60\'/0\'/0', index = 0 }) =>
-    last(await getEthereumAddresses(device, { path, indexes: [index] }));
+export const getEtherAddress: (device: any, options: EtherAddressOptions) => Promise<any> =
+  async (device, { path, index: i = 0 }) =>
+    last(await getEtherAddresses(device, { path, indexes: [i] }));

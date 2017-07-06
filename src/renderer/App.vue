@@ -15,7 +15,7 @@ export default {
   name: 'cryptfolio',
   data() {
     return {
-      pinEntryActive: true,
+      pinEntryActive: false,
     };
   },
   methods: {

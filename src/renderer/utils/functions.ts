@@ -85,14 +85,5 @@ export const bitOr: (x: number, y?: number) => (y: number) => number | number =
  *
  * @return {Number|Function}
  */
-export const bitZFillRight: (fill: number, n?: number) => (n: number) => number | number =
+export const bitZeroFillRight: (fill: number, n?: number) => (n: number) => number | number =
   curry((fill, n) => n >>> fill);
-
-/**
- * Apply bitwise zero fill right with fill 0 to passed number (n >>> 0).
- *
- * @param n {Number}
- *
- * @return {Number}
- */
-export const bitZFillRight0: (n: number) => number = bitZFillRight(0);
