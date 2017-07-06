@@ -39,7 +39,7 @@ const parseBip44PathLevel: (pathLevel: string) => number =
 export const parseBIP44Path: (pathString: string) => number[] =
   pipe(lchomp, split('/'), map(parseBip44PathLevel));
 
-interface EtherAddressOptions { index?: number | number[]; path?: string; }
+interface EtherAddressOptions { indexes?: number[]; path?: string; }
 
 /**
  * Gets Ethereum wallet address(es) on the passed device
@@ -53,13 +53,13 @@ interface EtherAddressOptions { index?: number | number[]; path?: string; }
  * @param device {Object} Trezor Device object
  * @param options {Object}
  *   @option path {String} path to wallet - default is BIP44 path ("m/40'/60'/0'/0/addressIndex")
- *   @option index {Number} wallet address index - default is 0
+ *   @option indexes {Number} wallet address indexes - default is [0]
  *
  * @return {Promise}
  */
 export const getEthereumAddress: (device: any, options: EtherAddressOptions) => Promise<any[]> =
-  (device, { path = 'm/40\'/60\'/0\'/0', index = 0 }) => {
-    const paths = map(append(__, parseBIP44Path(path)), unless(isArray, append(index, []), index));
+  (device, { path = 'm/40\'/60\'/0\'/0', indexes = [0] }) => {
+    const paths = map(append(__, parseBIP44Path(path)), indexes);
     const getAddresses = pipe(prop('getEthereumAddress'), call, map(__, paths));
 
     return device.run(async session => await Promise.all(getAddresses(session)));
