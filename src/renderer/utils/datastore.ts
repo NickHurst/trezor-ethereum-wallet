@@ -83,7 +83,7 @@ interface UpdateResult<T = object> {
  *
  * @return {Object}
  */
-const update: <T = object, Q = object>(db: DB, query: Q, update: Optional<T>, options: Nedb.UpdateOptions) => Promise<UpdateResult> =
+const update: <T = object, Q = object>(db: DB, query: Q, update: Optional<T>, options: Nedb.UpdateOptions) => Promise<UpdateResult<T>> =
   (db, query, update, options = {}) => new Promise((resolve, reject) =>
     db.update(query, update, options, (err, updatedCount, affectedDocs, upsert) =>
       err ? resolve({ updatedCount, affectedDocs, upsert }) : reject(err),
@@ -116,7 +116,7 @@ interface Table<T = object, Q = object> {
   findBy: (query: Q) => Promise<{ record: T }>;
   count: (query: Q) => Promise<{ count: number }>;
   insert: (item: T) => Promise<{ record: T }>;
-  update: (query: Q, update: Optional<T>, options: Nedb.UpdateOptions) => Promise<UpdateResult>;
+  update: (query: Q, update: Optional<T>, options: Nedb.UpdateOptions) => Promise<UpdateResult<T>>;
   destroy: (query: Q, options: Nedb.RemoveOptions) => Promise<{ destroyedCount: number }>;
 }
 
