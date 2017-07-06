@@ -1,10 +1,10 @@
 import path from 'path';
 
-import Datastore from 'nedb';
+import DB from 'nedb';
 
 import { curryN } from 'ramda';
 
-interface FindPayload { query: object; docs?: object[]; err?: object; }
+type Optional<T> = { [P in keyof T]?: T[P] };
 
 /**
  * Executes a find query on passed datastore and returns a promise
@@ -15,12 +15,10 @@ interface FindPayload { query: object; docs?: object[]; err?: object; }
  *
  * @return {Object}
  */
-const find: (db: Datastore, query: object) => Promise<FindPayload> = (db, query) =>
-  new Promise((resolve, reject) =>
-    db.find(query, (err, docs) => err ? resolve({ docs, query }) : reject({ err, query })),
+const find: <T = object, Q = object>(db: DB, query: Q) => Promise<{ records: T[] }> =
+  (db, query) => new Promise((resolve, reject) =>
+    db.find(query, (err, records) => err ? resolve({ records }) : reject(err)),
   );
-
-interface FindByPayload { query: object; doc?: object; err?: Error; }
 
 /**
  * Executes a find one query on passed datastore and returns a promise
@@ -31,12 +29,10 @@ interface FindByPayload { query: object; doc?: object; err?: Error; }
  *
  * @return {Object}
  */
-const findBy: (db: Datastore, query: object) => Promise<FindByPayload> = (db, query) =>
-  new Promise((resolve, reject) =>
-    db.findOne(query, (err, doc) => err ? resolve({ doc, query }) : reject({ err, query })),
+const findBy: <T = object, Q = object>(db: DB, query: Q) => Promise<{ record: T }> =
+  (db, query) => new Promise((resolve, reject) =>
+    db.findOne(query, (err, record) => err ? resolve({ record }) : reject(err)),
   );
-
-interface CountPayload { query: object; count?: number; err?: Error; }
 
 /**
  * Executes a count on passed datastore and returns a promise that resolves
@@ -47,12 +43,10 @@ interface CountPayload { query: object; count?: number; err?: Error; }
  *
  * @return {Object}
  */
-const count: (db: Datastore, query: object) => Promise<CountPayload> = (db, query = {}) =>
-  new Promise((resolve, reject) =>
-    db.count(query, (err, count) => err ? resolve({ count, query }) : reject({ err, query })),
+const count: <Q = object>(db: DB, query: Q) => Promise<{ count: number }> =
+  (db, query = {}) => new Promise((resolve, reject) =>
+    db.count(query, (err, count) => err ? resolve({ count }) : reject(err)),
   );
-
-interface InsertPayload { doc?: object; err?: Error; }
 
 /**
  * Executes an insert on passed datastore and attempts to insert passed
@@ -64,19 +58,15 @@ interface InsertPayload { doc?: object; err?: Error; }
  *
  * @return {Object}
  */
-const insert: (db: Datastore, doc: object) => Promise<InsertPayload> = (db, doc) =>
-  new Promise((resolve, reject) =>
-    db.insert(doc, (err, newDoc) => err ? resolve({ doc: newDoc }) : reject({ err, doc })),
+const insert: <T = object>(db: DB, item: T) => Promise<{ record: T }> =
+  (db, item) => new Promise((resolve, reject) =>
+    db.insert(item, (err, record) => err ? resolve({ record }) : reject(err)),
   );
 
-interface UpdatePayload {
-  updatedCount?: number;
-  affectedDocs?: object | object[];
+interface UpdateResult<T = object> {
+  updatedCount: number;
+  affectedDocs?: T | T[];
   upsert?: boolean;
-  err?: Error;
-  query?: object;
-  update?: object;
-  options?: Nedb.UpdateOptions;
 }
 
 /**
@@ -93,20 +83,12 @@ interface UpdatePayload {
  *
  * @return {Object}
  */
-const update: (db: Datastore, query: object, update: object, options: Nedb.UpdateOptions) => Promise<UpdatePayload> =
+const update: <T = object, Q = object>(db: DB, query: Q, update: Optional<T>, options: Nedb.UpdateOptions) => Promise<UpdateResult> =
   (db, query, update, options = {}) => new Promise((resolve, reject) =>
     db.update(query, update, options, (err, updatedCount, affectedDocs, upsert) =>
-      err ? resolve({ updatedCount, affectedDocs, upsert }) : reject({ err, query, update, options }),
+      err ? resolve({ updatedCount, affectedDocs, upsert }) : reject(err),
     ),
   );
-
-interface DestroyPayload {
-  destroyedCount?: number;
-  err?: Error;
-  query?: object;
-  update?: object;
-  options?: Nedb.RemoveOptions;
-}
 
 /**
  * Executes a remove on passed datastore and attempts to remove documents in
@@ -120,22 +102,22 @@ interface DestroyPayload {
  *
  * @return {Object}
  */
-const destroy: (db: Datastore, query: object, options: Nedb.RemoveOptions) => Promise<DestroyPayload> =
+const destroy: <Q = object>(db: DB, query: Q, options: Nedb.RemoveOptions) => Promise<{ destroyedCount: number }> =
   (db, query, options = {}) => new Promise((resolve, reject) =>
     db.remove(query, options, (err, destroyedCount) =>
-      err ? resolve({ destroyedCount }) : reject({ err, query, update, options }),
+      err ? resolve({ destroyedCount }) : reject(err),
     ),
   );
 
-interface Table {
+interface Table<T = object, Q = object> {
   name: string;
-  store: Datastore;
-  find: (query: object) => Promise<FindPayload>;
-  findBy: (query: object) => Promise<FindByPayload>;
-  count: (query: object) => Promise<CountPayload>;
-  insert: (doc: object) => Promise<InsertPayload>;
-  update: (query: object, update: object, options: Nedb.UpdateOptions) => Promise<UpdatePayload>;
-  destroy: (query: object, options: Nedb.RemoveOptions) => Promise<DestroyPayload>;
+  store: DB;
+  find: (query: Q) => Promise<{ records: T[] }>;
+  findBy: (query: Q) => Promise<{ record: T }>;
+  count: (query: Q) => Promise<{ count: number }>;
+  insert: (item: T) => Promise<{ record: T }>;
+  update: (query: Q, update: Optional<T>, options: Nedb.UpdateOptions) => Promise<UpdateResult>;
+  destroy: (query: Q, options: Nedb.RemoveOptions) => Promise<{ destroyedCount: number }>;
 }
 
 /**
@@ -146,8 +128,8 @@ interface Table {
  *
  * @return {Object}
  */
-export const loadTable: (name: string) => Table = name => {
-  const store = new Datastore({
+export const loadTable: <T = object, Q = object>(name: string) => Table<T, Q> = name => {
+  const store = new DB({
     filename: path.join('~', '.trezor-ether-wallet', 'data', `${name}.db`),
     autoload: true,
   });
