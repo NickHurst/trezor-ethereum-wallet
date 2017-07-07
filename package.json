@@ -90,6 +90,7 @@
   "ava": {
     "files": ["test/**/*.{js,ts}"],
     "source": ["src/renderer/**/*.{js,ts}"],
-    "verbose": true
+    "verbose": true,
+    "babel": "inherit"
   }
 }
