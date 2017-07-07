@@ -1,6 +1,15 @@
 import { curry, drop, dropLast, equals, pipe, type } from 'ramda';
 
 /**
+ * Calls Promise.all with passed argument
+ *
+ * @param promises {Array}
+ *
+ * @return {Promise}
+ */
+export const allP: (promises: Array<Promise<any>>) => Promise<any[]> = arr => Promise.all(arr);
+
+/**
  * Removes the last character/item from a string/array.
  *
  * @param item {String|Array}

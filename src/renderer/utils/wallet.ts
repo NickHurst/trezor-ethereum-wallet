@@ -1,6 +1,6 @@
-import { append, call, curryN, drop, equals, flip, ifElse, last, map, once, pipe, prop, split, unless } from 'ramda';
+import { __, append, call, converge, curryN, drop, equals, flip, head, identity, ifElse, last, map, nthArg, once, pair, pipe, prop, split, unapply, unless } from 'ramda';
 
-import { bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger } from './functions';
+import { allP, bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger } from './functions';
 
 /**
  * Applies 0x80000000 bitmask to passed BIP44 path level
@@ -57,13 +57,13 @@ interface EtherAddressOptions { index?: number; indexes?: number[]; path?: strin
  *
  * @return {Promise}
  */
-export const getEtherAddresses: (device: any, options?: EtherAddressOptions) => Promise<any[]> =
+export const getEtherAddresses: (device: Trezor.Device, options?: EtherAddressOptions) => Promise<Trezor.EtherAddress[]> =
   async (device, { path: pathStr = 'm/40\'/60\'/0\'/0', indexes = [0] } = {}) => {
     const path = parseBIP44Path(pathStr);
-    const paths = indexes.map(curryN(2, flip(append)(path)));
-    const getAddresses = pipe(prop('getEthereumAddress'), flip(map)(paths));
+    const getAddresses: (session: Trezor.Session) => Promise<Trezor.EtherAddress[]> =
+      pipe(prop('getEthereumAddress'), map(__, map(append(__, path), indexes)), allP);
 
-    return await device.run(session => Promise.all(getAddresses(session)));
+    return await device.run(getAddresses);
   };
 
 /**
@@ -76,6 +76,6 @@ export const getEtherAddresses: (device: any, options?: EtherAddressOptions) => 
  *
  * @return {Promise}
  */
-export const getEtherAddress: (device: any, options?: EtherAddressOptions) => Promise<any> =
+export const getEtherAddress: (device: Trezor.Device, options?: EtherAddressOptions) => Promise<Trezor.EtherAddress> =
   async (device, { path = 'm/40\'/60\'/0\'/0', index = 0 } = {}) =>
     last(await getEtherAddresses(device, { path, indexes: [index] }));
