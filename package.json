@@ -17,6 +17,7 @@
     "dev": "node .electron-vue/dev-runner.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src test",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src test",
+    "test": "ava",
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@types/nedb": "^1.8.3",
+    "ava": "^0.20.0",
     "awesome-typescript-loader": "^3.2.1",
     "babel-core": "^6.22.1",
     "babel-eslint": "^7.0.0",
@@ -84,5 +86,10 @@
     "webpack-dev-server": "^2.3.0",
     "webpack-hot-middleware": "^2.18.0",
     "webpack-merge": "^4.1.0"
+  },
+  "ava": {
+    "files": ["test/**/*.{js,ts}"],
+    "source": ["src/renderer/**/*.{js,ts}"],
+    "verbose": true
   }
 }
