@@ -1,4 +1,4 @@
-import { call, equals, ifElse, last, map, once, pipe, prop, split, unless } from 'ramda';
+import { append, call, curryN, drop, equals, flip, ifElse, last, map, once, pipe, prop, split, unless } from 'ramda';
 
 import { bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger } from './functions';
 
@@ -37,7 +37,7 @@ const parseBIP44PathLevel: (pathLevel: string) => number =
  * @return {Array<Number>}
  */
 export const parseBIP44Path: (pathString: string) => number[] =
-  pipe(lchomp, split('/'), map(parseBIP44PathLevel));
+  pipe(drop(2), split('/'), map(parseBIP44PathLevel));
 
 interface EtherAddressOptions { index?: number; indexes?: number[]; path?: string; }
 
@@ -57,12 +57,13 @@ interface EtherAddressOptions { index?: number; indexes?: number[]; path?: strin
  *
  * @return {Promise}
  */
-export const getEtherAddresses: (device: any, options: EtherAddressOptions) => Promise<any[]> =
-  async (device, { path = 'm/40\'/60\'/0\'/0', indexes = [0] }) => {
-    const paths = indexes.map(call(once(parseBIP44Path(path)).concat));
-    const getAddresses = pipe(prop('getEthereumAddress'), call, call(paths.map));
+export const getEtherAddresses: (device: any, options?: EtherAddressOptions) => Promise<any[]> =
+  async (device, { path: pathStr = 'm/40\'/60\'/0\'/0', indexes = [0] } = {}) => {
+    const path = parseBIP44Path(pathStr);
+    const paths = indexes.map(curryN(2, flip(append)(path)));
+    const getAddresses = pipe(prop('getEthereumAddress'), flip(map)(paths));
 
-    return await device.run(pipe(getAddresses, Promise.all));
+    return await device.run(session => Promise.all(getAddresses(session)));
   };
 
 /**
@@ -75,6 +76,6 @@ export const getEtherAddresses: (device: any, options: EtherAddressOptions) => P
  *
  * @return {Promise}
  */
-export const getEtherAddress: (device: any, options: EtherAddressOptions) => Promise<any> =
-  async (device, { path, index = 0 }) =>
+export const getEtherAddress: (device: any, options?: EtherAddressOptions) => Promise<any> =
+  async (device, { path = 'm/40\'/60\'/0\'/0', index = 0 } = {}) =>
     last(await getEtherAddresses(device, { path, indexes: [index] }));
