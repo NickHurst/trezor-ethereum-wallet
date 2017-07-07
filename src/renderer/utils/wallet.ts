@@ -63,7 +63,7 @@ export const getEtherAddresses: (device: Trezor.Device, options?: EtherAddressOp
     const getAddresses: (session: Trezor.Session) => Promise<Trezor.EtherAddress[]> =
       pipe(prop('getEthereumAddress'), map(__, map(append(__, path), indexes)), allP);
 
-    return await device.run(getAddresses);
+    return await device.run<Trezor.EtherAddress[]>(getAddresses);
   };
 
 /**
