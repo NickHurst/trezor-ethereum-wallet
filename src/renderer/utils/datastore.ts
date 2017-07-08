@@ -130,7 +130,7 @@ interface Table<T = object, Q = object> {
  */
 export const loadTable: <T = object, Q = object>(name: string) => Table<T, Q> = name => {
   const store = new DB({
-    filename: path.join('~', '.trezor-ether-wallet', 'data', `${name}.db`),
+    filename: path.join(process.env.DATASTORE_PATH || '~/.trezor-ethereum-wallet/data', `${name}.db`),
     autoload: true,
   });
 

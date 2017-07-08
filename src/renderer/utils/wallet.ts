@@ -1,6 +1,6 @@
 import { __, append, call, converge, curryN, drop, equals, flip, head, identity, ifElse, last, map, nthArg, once, pair, pipe, prop, split, unapply, unless } from 'ramda';
 
-import { allP, bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger } from './functions';
+import { bitOr, bitZeroFillRight, chomp, isArray, lchomp, parseInteger, reduceP } from './functions';
 
 /**
  * Applies 0x80000000 bitmask to passed BIP44 path level
@@ -61,7 +61,7 @@ export const getEtherAddresses: (device: Trezor.Device, options?: EtherAddressOp
   async (device, { path: pathStr = 'm/40\'/60\'/0\'/0', indexes = [0] } = {}) => {
     const path = parseBIP44Path(pathStr);
     const getAddresses: (session: Trezor.Session) => Promise<Trezor.EtherAddress[]> =
-      pipe(prop('getEthereumAddress'), map(__, map(append(__, path), indexes)), allP);
+      pipe(prop('getEthereumAddress'), map(__, map(append(__, path), indexes)), reduceP);
 
     return await device.run<Trezor.EtherAddress[]>(getAddresses);
   };

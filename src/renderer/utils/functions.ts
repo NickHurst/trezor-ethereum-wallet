@@ -7,7 +7,7 @@ import { curry, drop, dropLast, equals, pipe, type } from 'ramda';
  *
  * @return {Promise}
  */
-export const allP: (promises: Array<Promise<any>>) => Promise<any[]> = arr => Promise.all(arr);
+export const reduceP: (promises: Array<Promise<any>>) => Promise<any[]> = arr => Promise.all(arr);
 
 /**
  * Removes the last character/item from a string/array.
